@@ -1,10 +1,15 @@
 import sys
+import re
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-p = Path("ReoNa-paper-digest/tests/output/render").resolve()
+p = Path(sys.argv[1] if len(sys.argv) > 1 else "ReoNa-paper-digest/tests/output/render").resolve()
 frag = (p / "article.html").read_text(encoding="utf-8")
+mark_style = ""
+mark_match = re.search(r'<mark[^>]*style="([^"]+)"', frag)
+if mark_match:
+    mark_style = mark_match.group(1)
 
 checks = {
     "无 <style> 标签残留": "<style>" not in frag,
@@ -16,7 +21,9 @@ checks = {
     "样式已内联 (style= > 80)": frag.count("style=") > 80,
     "警告块存在": all(f"markdown-alert-{t}" in frag for t in ("important", "tip", "warning")),
     "mark 高亮存在": "<mark" in frag,
+    "高亮为 IMPORTANT 紫色粗体": "background-color: #986ee2" in mark_style and "font-weight: bold" in mark_style,
     "表格存在": "<table" in frag and "<th" in frag,
+    "默认字体为微软雅黑优先无衬线": "Microsoft YaHei" in frag and "Times New Roman" not in frag,
     "无 @@TOKEN@@ 残留": "@@" not in frag,
     "无 <marker> 残留（箭头已展开）": "<marker" not in frag,
     "无 marker-end 残留": "marker-end" not in frag,

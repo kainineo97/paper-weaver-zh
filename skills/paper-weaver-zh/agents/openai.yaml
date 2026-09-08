@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Weaver 中文科研写作"
+  short_description: "将论文证据与研究讨论组织成连贯中文科研长文，润色后复核并生成公众号草稿"
+  default_prompt: "请用 $paper-weaver-zh 将这些论文和 ChatGPT 讨论编织成中文科研公众号文章，完成证据核对、结构重组、全文润色和同步预览。"

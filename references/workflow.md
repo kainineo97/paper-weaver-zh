@@ -8,7 +8,7 @@
 
 1. 用自然语言向用户收集：专栏名称与定位、目标读者、核心主题范围、更新频率。
 2. **一键建合集（推荐）**：`python ReoNa-paper-digest/scripts/new-column.py 合集名 --desc "定位"`——自动建 `合集名/`（EDITORIAL_CALENDAR / BRAND_VOICE / ARTICLES_SUMMARY / README / assets/covers）。
-3. 手动建时在工作区根（仓库的上一级）下创建专栏根目录（如 `Metabolomics/`），写入：
+3. 手动建时在工作区根（仓库的上一级）下创建专栏根目录（如 `scOmics/`），写入：
    - `EDITORIAL_CALENDAR.md`（选题日历：每篇序号/标题/摘要/依赖/状态）
    - `BRAND_VOICE.md`（人设、口吻、禁用词清单——直接复用 SKILL 的 L1 禁用词）
    - `ARTICLES_SUMMARY.md`（每篇一行占位）
@@ -35,30 +35,22 @@ python ReoNa-paper-digest/scripts/prepare.py inbox/子文件夹 --title "文章�
 4. 生成 `refs.md`：核心论文 + 文中将引用的对比方法/综述/工具；条目与正文 `[n]` 计划对应。
 5. （可选）`web_search` 补领域讨论/批判视角，作为 refs 与正文批判来源。
 
-## Phase 3 · Write（按追问链写作）
+## Phase 3 · Write（按追问逻辑重组写作）
 
 1. 加载：`EDITORIAL_CALENDAR`、`ARTICLES_SUMMARY`、`BRAND_VOICE`、当前 `refs.md`、`materials.md`、`dialogue.md`。**不加载其他文章全文**。
-2. 大纲 = 对话追问链展开（用户问题即小节钩子）。
+2. 从对话追问链提取论证顺序与信息缺口，再改写为陈述式、学术化的小节标题；不要机械复制用户口语或把每个问题都变成标题。
 3. 逐节写 `article.md`，严格遵循 SKILL「写作规范」：
-   - 辩证批判、短段落、无说教、术语首次中文注释
+   - 辩证批判、正式科学书面语、短段落、无说教、术语首次中文注释
+   - 明确区分“未报告/未评估/未检测到/差异无统计学意义/没有产物”；生产效率写清分子和分母
    - WeMD 方言（**公式单行**、Mermaid 用 `flowchart TB`、高亮 ≤5、表格 ≤4 列）
    - **正文不写 `#` 大标题**（文章标题在微信文章头显示，正文重复会残留空行删不掉）
-   - **第一人称**：正文不出现「对话里 ChatGPT 说」等素材来源表述，观点归属"我/我们"
-   - **引号全角中文**（“…”）；`<div class="fig-caption">` 等 HTML 属性保持 ASCII
-   - 对话中讲解数学原理的公式（z-score、相似度、倍数变化等）单行化后保留进正文
    - 引用按首次出现顺序编号；文末「## 参考文献」条目间空行
-   - 正文引用 Figure 处保留引用文字，并规划插图（含扩展数据图面板，见 Phase 4）
-4. 写完更新 `meta.yaml`（title/summary/author）。
-
-**Phase 3 出口自查清单**：
-- [ ] 无「对话里 ChatGPT 说/材料中提到」等素材来源表述（第一人称）
-- [ ] 引号全部全角中文（除 HTML 属性）
-- [ ] 所有公式单行；对话中的关键数学原理公式已保留
-- [ ] 正文引用的每个图号（含扩展数据图）都有对应截图计划
+   - 正文引用 Figure 处保留引用文字，并规划插图（见 Phase 4）
+4. 正文定稿后生成 3 个标题候选并推荐 1 个：主标题写入 `meta.yaml.title`，补充主题写入 `subtitle`，同时更新 summary/author/last_edited。
 
 ## Phase 4 · Review（质检 + 插图）
 
-1. 四层文字质检（L1 禁用词 / L2 风格 / L3 内容 / L4 真人感）。
+1. 五层文字质检（L1 禁用词 / L2 证据措辞 / L3 语言句法 / L4 内容 / L5 朗读与视觉终审）。
 2. 自动化检查：`publish-check.py --article-dir articles/00X-标题`（PASS 才继续）。
 3. **插图**：对正文引用的每个 Figure：
    ```bash
@@ -68,15 +60,15 @@ python ReoNa-paper-digest/scripts/prepare.py inbox/子文件夹 --title "文章�
    在 `article.md` 对应位置插入 `![](images/fig-xxx.png)` + `<div class="fig-caption">…</div>`（论文图「图 S1｜描述」，原创图描述性标题）。
 4. 重跑 `publish-check.py` 与 `render.py` 验证。
 
-## Phase 5 · Publish（渲染 → 预览 → 草稿）
+## Phase 5 · Publish（标题与封面 → 渲染 → 预览 → 草稿）
 
 1. 摘要：`python ReoNa-paper-digest/scripts/summary.py articles/00X-标题`（自动生成并写入 meta.yaml summary，无需手写）。
-2. 渲染：`render.py articles/00X-标题/article.md --screenshot` → `dist/preview.html`。
-3. 用户打开 preview.html 做视觉终审（公式/流程图/表格/图片/提示块/字体）。
-4. 通过后：`publish.py articles/00X-标题`（自动填标题/作者/摘要 → 分段粘贴正文 + 图片上传 → 保存草稿 → 回报链接）。**群发仍由用户在后台人工点击。**
-5. **封面（手动）**：草稿保存后，人工在编辑器封面区「拖拽或选择封面 → 本地上传 → 选择 `publish.py` 打印的封面文件 → 确定 → 再保存」；**不做自动上传**（微信编辑器封面对话框自动化不可靠，已固定为手动）。
-6. 更新 `EDITORIAL_CALENDAR` / `ARTICLES_SUMMARY` / `README` 状态，Git 提交。
-7. **封面生成**：文章定稿后审计提示词 → `cover-gen.py -f 提示词.md -o assets/covers/NNN-cover.png --slug NNN`（qwen-image-3.0-pro，固定生成 1 张直接出最终 900×383，无候选文件）→ 确认 `meta.yaml.cover_image` 解析正确。
+2. **ImageGen 封面**：根据定稿标题与正文组织提示词，调用内置 ImageGen 生成无文字横版封面；从 `$CODEX_HOME/generated_images/` 选定原图后运行 `cover-gen.py --final <原图> -o assets/covers/00X-cover.png`，并更新 `meta.yaml.cover_image`。
+3. 渲染：`render.py articles/00X-标题/article.md --screenshot` → `dist/preview.html`。
+4. 用户打开 preview.html 做视觉终审（公式/流程图/表格/图片/提示块/字体），并检查封面主体、留白和缩略图识别度。正文、标题、表格、图注和 Mermaid 均应使用微软雅黑优先的中文无衬线字体栈。
+5. 通过后：`publish.py articles/00X-标题`（自动填标题/作者/摘要 → 分段粘贴正文 + 图片上传 → 保存草稿 → 回报链接）。**群发仍由用户在后台人工点击。**
+6. **封面上传（手动）**：草稿保存后，人工在编辑器封面区「拖拽或选择封面 → 本地上传 → 选择 `publish.py` 打印的封面文件 → 确定 → 再保存」；**不做自动上传**（微信编辑器封面对话框自动化不可靠，已固定为手动）。
+7. 更新 `EDITORIAL_CALENDAR` / `ARTICLES_SUMMARY` / `README` 状态，Git 提交。
 
 ## 已知边界速查
 

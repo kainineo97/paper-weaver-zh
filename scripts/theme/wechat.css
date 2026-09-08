@@ -3,7 +3,7 @@
    已预解析：无 var()/calc()/color-mix()，颜色全部扁平化，微信编辑器直接兼容。
    __PRIMARY__ / __PRIMARY_RGB__ 由 render.py 按 --primary-color 替换。 */
 
-/* 字体族共享：正文 p / 各级标题 / 列表 / 表格 / 图注全部显式声明衬线字体，
+/* 字体族共享：正文 p / 各级标题 / 列表 / 表格 / 图注全部显式声明中文无衬线字体，
    不依赖 container 继承——微信粘贴图片会改写 DOM 结构，继承链断裂后
    无显式 font-family 的元素会回退成微信默认字体（用户实测反馈）。 */
 section,
@@ -20,7 +20,7 @@ blockquote,
 td,
 th,
 .fig-caption {
-  font-family: "Times New Roman", "Songti SC", SimSun, serif;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
 }
 
 section,
@@ -269,10 +269,11 @@ strong {
 }
 
 mark {
-  background-color: __PRIMARY__;
+  background-color: #986ee2;
   padding: 2px 4px;
   border-radius: 2px;
   color: #ffffff;
+  font-weight: bold;
 }
 
 /* ==================== 表格 ==================== */

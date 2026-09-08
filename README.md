@@ -1,115 +1,121 @@
-# ReoNa-paper-digest
+# ReoNa-paper-digest · Paper Weaver 分支
 
-**把「论文 + ChatGPT 讨论」一键变成微信公众号文章草稿的完整管线。**
+把一篇或多篇论文与研究讨论，编织成证据可追溯、中文自然的科研长文，并生成同步的阅读页与微信公众号富文本复制页。
 
-面向科研写作者的本地工具链：你提供三样材料（论文 PDF、补充材料 PDF、与 ChatGPT 的逐段讨论导出），它自动完成 **收料 → 写作 → 渲染 → 质检 → 存草稿** 全流程，最终产出微信编辑器可直接粘贴的内联样式 HTML，并可自动登录公众号后台存入草稿箱（**群发/发表永远人工点击**）。
+这是基于 [ReoNa0216/ReoNa-paper-digest](https://github.com/ReoNa0216/ReoNa-paper-digest) 的个人修改分支，保留 ReoNa 工具链，加入 **paper-weaver-zh 0.1.1-fork** 组合工作流。上游代码与第三方 skill 的来源分别保留，不将它们归为本分支原创。
 
-> ⚠️ **免责声明**：本工具仅供个人学习与研究使用。自动登录公众号后台、自动保存草稿属于平台自动化操作，请遵守微信平台规则并自行承担使用风险。本项目与微信官方无关。
+“一键”指助手在收到材料后连续完成工作：阅读论文、组织论证、写作、润色与科学复核由助手执行；Python 负责归档、结构检查和渲染。默认交付本地审阅稿，不自动上传微信或公开发布。
 
----
+## 这个分支增加了什么
 
-## 特性
+- **问题覆盖与文章顺序分开。** 讨论图整理用户真正关心的问题，叙事图安排读者理解顺序，不把聊天记录机械改成章节。
+- **证据账本与三阶段稿件。** 保留事实、解释、假设和用户判断的身份，保存初稿、全文润色稿和复核稿。
+- **全文中文编辑后再做科学复核。** 检查数字、单位、物种、分母、比较对象与结论强度，避免润色把“提示”改成“证明”。
+- **审核绑定当前版本。** 正文、标题、摘要和图片定稿后记录指纹；受审核材料变化后要重新复核，不能仅刷新哈希。
+- **同步交付两种页面。** 阅读页和富文本复制页共用相同正文内容，保留微软雅黑字体栈、紫色强调、原生上标和复制降级路径。
+- **仓库内依赖可直接查找。** 不要求存在作者开发机上的全局 skill；依赖仍保持独立目录。
 
-- **一键收料**：材料丢进 `inbox/`，`prepare.py` 自动识别 PDF/对话、归档、建文章骨架
-- **多合集支持**：`new-column.py` 一个命令建新合集（专栏），互不干扰
-- **WeMD 方言**：专门为微信优化的 Markdown 方言（提示块 / 高亮 / 单行公式 / Mermaid 流程图 / 表格）
-- **微信友好渲染**：MathJax SVG 自包含、Mermaid 防样式污染、图片 base64、图注与标题居中、手机端表格自适应（均为真实微信编辑器 DOM 实测调优）
-- **防呆设计**：20 项渲染检查 + 15 项发布逻辑测试；草稿保存成功才写 `status=draft`（不造假状态）
-- **发布安全**：meta.yaml 只存不含登录 token 的草稿链接；API 密钥走环境变量 / `.env`（gitignore 排除）
+## 流程图
 
-## 安装
+[![Paper Weaver 的四泳道流程图](docs/paper-weaver.png)](docs/paper-weaver.html)
 
-```bash
-git clone https://github.com/<your>/ReoNa-paper-digest.git
-cd ReoNa-paper-digest
-pip install -r requirements.txt
-python -m playwright install chromium   # 浏览器自动化（存草稿用）
-```
+[交互版 HTML](docs/paper-weaver.html) · [可编辑图源 JSON](docs/paper-weaver.workflow.json) · [设计说明](docs/design.md)
 
-> 💡 Windows 中文系统提示：`requirements.txt` 保持纯 ASCII（注释为英文）。若你自行加中文注释，pip 在 GBK 默认编码下会报 `UnicodeDecodeError`。
+图由 [Archify](https://github.com/tt-a1i/archify) 生成。README 展示静态预览；交互版包含缩放、深浅主题等控件，请下载 `paper-weaver.html` 后在浏览器打开。GitHub 文件浏览页不是网页运行环境，不会在 README 内执行这份 HTML。图表文件是独立文档，不是运行写作流程所需的依赖。本分支不附自动部署工作流。
 
-可选依赖：
-- 封面生成（`cover-gen.py`）需要 ZenMux API Key（环境变量 `ZENMUX_API_KEY`）
-- 摘要生成（`summary.py`）需要 DeepSeek API Key（`DEEPSEEK_API_KEY`）；无密钥时自动退回规则抽取
+## 写作、润色与讨论整理：分别由谁负责
+
+需要明确区分 **article-writing 的结构编辑** 与 **humanizer-zh 的全文中文润色**。它们不是两个同义的“去 AI 味”步骤。新增的 note-organizing 则负责前面的讨论整理。
+
+| 能力 | 随包位置 | 作用与边界 |
+|---|---|---|
+| ReoNa-paper-digest | 仓库根 `SKILL.md`、`scripts/` | 科研写作规范、收料、图表、WeMD 与渲染工具链；保留本地修改 |
+| note-organizing 1.1.0 | [skills/note-organizing](skills/note-organizing/SKILL.md) | 归并重复、跳跃的问题，保留讨论来源；内部笔记不是最终文章 |
+| article-writing 2.0.0 | [skills/article-writing](skills/article-writing/SKILL.md) | 组织中心问题、论证、章节与过渡；不硬套商业冲突或夸大意义 |
+| humanizer-zh | [skills/humanizer-zh](skills/humanizer-zh/SKILL.md) | 全文中文编辑，修复翻译腔、指代、机械句式与节奏；不删科学限定词 |
+| reona-paper-digest-zh | [skills/reona-paper-digest-zh](skills/reona-paper-digest-zh/SKILL.md) | 复用独立阅读页和富文本复制页生成器 |
+| paper-weaver-zh | [skills/paper-weaver-zh](skills/paper-weaver-zh/SKILL.md) | 串联上述能力，维护证据、返工与审核版本关系 |
+
+这些 skill 没有被拼成一篇超长提示词。助手按阶段读取规则；冲突时以当前用户要求、科学事实与本组合层的适用范围为准，具体见 [依赖与执行约定](skills/paper-weaver-zh/references/integration.md)。默认中立科学书面语，不主动要求作者人设。
 
 ## 快速开始
 
-```
-你的工作区/
-├── ReoNa-paper-digest/        # 本仓库（脚本单一份，不复制进专栏）
-├── Metabolomics/                   # 你的第一个合集（专栏）——new-column.py 创建
-├── inbox/                     # 收料暂存区（gitignore）
-└── .env                       # API 密钥（KEY=VALUE，gitignore）
-```
+要求 Python 3.10+；本分支在 Python 3.12 环境验证。PDF 阅读、内置 ImageGen 等助手能力由运行环境提供，仓库不会自动购买服务或联网安装 skill。
 
-### 1. 新建合集（每个公众号栏目一个）
+在下载或克隆后的仓库根目录运行：
 
 ```bash
-python ReoNa-paper-digest/scripts/new-column.py 我的合集 --desc "一句话定位"
+python -m pip install -r requirements.txt
+python -m playwright install chromium
+python skills/paper-weaver-zh/scripts/pipeline.py doctor
 ```
 
-### 2. 收料（每篇文章一次）
+`doctor` 应把 ReoNa 定位到本仓库根，其余四项依赖定位到本仓库 `skills/`。查找优先级为显式 `--skills-root`、仓库内依赖、`$CODEX_HOME/skills`。它检查文件指纹和 Python 模块，不证明浏览器可以启动，也不证明科学审核已完成。
 
-把材料丢进 `inbox/任意子文件夹/`：
+### 交给助手执行
 
+在支持读取本地 skill 的助手中打开本仓库，可以直接这样请求：
+
+```text
+请读取并使用本仓库 skills/paper-weaver-zh/SKILL.md。
+处理我指定文件夹中的论文 PDF、补充材料和 ChatGPT 讨论，
+按主题组织一篇完整科研长文，先交付本地阅读页和富文本复制页，不上传微信。
 ```
-inbox/第2篇/
-├── 对话导出.md        # ChatGPT Exporter 单篇 md，或官方导出 zip
-├── 论文.pdf
-└── 补充材料.pdf
-```
+
+已经将该 skill 安装到助手的可发现目录时，也可直接调用 `$paper-weaver-zh`。仅执行 Python 命令不会自动生成文章、证据分析或科学批准。skill 的加载机制以运行产品的 [官方说明](https://learn.chatgpt.com/docs/build-skills) 为准。
+
+### 脚本能做的事
 
 ```bash
-python ReoNa-paper-digest/scripts/prepare.py inbox/第2篇 --title "文章标题" --series 我的合集
+# 归档材料；输出必须是新的或空的目录
+python skills/paper-weaver-zh/scripts/pipeline.py init --out ../article-work/001-topic --paper ../inbox/main.pdf --chat ../inbox/discussion.md
+
+# 以下步骤在助手完成分析、写作、科学复核，并定稿标题和图片之后执行
+python skills/paper-weaver-zh/scripts/pipeline.py fingerprint ../article-work/001-topic
+# 将指纹和真实审核结果写入 analysis/review.yaml；命令本身不批准稿件
+python skills/paper-weaver-zh/scripts/pipeline.py check ../article-work/001-topic
+python skills/paper-weaver-zh/scripts/pipeline.py build ../article-work/001-topic --screenshot
 ```
 
-自动产出 `我的合集/articles/002-标题/` 骨架 + 归档材料 + `dialogue.md`。
+多论文使用重复 `--paper`，补充材料使用 `--supplement P002=supplement.pdf`。官方对话 JSON/ZIP 含多个对话时，用 `--title-filter` 选到唯一对话。参数完整含义见 [执行约定](skills/paper-weaver-zh/references/integration.md)。文章工作目录建议放在代码仓库之外。
 
-### 3. 写作 → 渲染 → 存草稿
+## 输出与安全边界
 
-1. 按 `SKILL.md` 写作规范写 `article.md`（WeMD 方言）
-2. `python ReoNa-paper-digest/scripts/render.py article.md --screenshot` → 预览
-3. 预览确认后 `python ReoNa-paper-digest/scripts/publish.py 文章目录` → 自动填标题/作者/摘要、粘贴正文、上传图片、保存草稿，返回草稿链接
+```text
+文章目录/
+├── materials/               原始材料归档、来源 ID、规范化对话
+├── analysis/                问题图、论文事实、证据账本、叙事图、审核记录
+├── drafts/                  01-draft、02-polished、03-reviewed
+├── article.md               正文唯一来源
+├── meta.yaml / refs.md      元数据与参考文献
+└── dist/
+    ├── article.html         微信内联样式正文
+    ├── reading.html         独立阅读页
+    └── preview.html         同内容富文本复制页
+```
 
-> **封面**：生成（`cover-gen.py`）后，在草稿编辑器手动设置（微信封面对话框自动化不可靠，已固定为手动步骤）。
-> **发表**：永远由你在公众号后台人工点击，脚本绝不自动群发。
+结构检查通过不等于科学结论真实。未核实事实不得写成已证实结论，未做微信实际粘贴测试时不得声称已通过。
 
-## 工具一览
+原有 `scripts/publish.py` 保留，但不是 paper-weaver 默认构建步骤。只有用户明确要求上传草稿时才进入相应流程；微信封面设置按实际工具能力处理，公开发布与群发由用户操作。请勿把 API 密钥、登录态、原始讨论、论文或生成文章提交到代码仓库。
 
-| 工具 | 作用 |
-|---|---|
-| `new-column.py` | 一键新建合集骨架（日历/品牌调性/README） |
-| `prepare.py` | 一键收料：inbox → 文章骨架 + 归档 + ingest |
-| `ingest.py` | ChatGPT 对话导出 → 结构化 `dialogue.md` |
-| `render.py` | `article.md` → 微信内联样式 HTML（20 项检查） |
-| `publish.py` | 存草稿：填标题/摘要、分段粘贴、图片上传、保存确认 |
-| `publish-check.py` | 发布前检查（元数据/封面/引用等） |
-| `pdf-figure.py` | 从论文 PDF 截取插图（含图注裁剪） |
-| `cover-gen.py` | ZenMux qwen-image-3.0-pro 生成封面（900×383，固定 1 张） |
-| `summary.py` | DeepSeek 生成摘要（≤120 字），无密钥规则回退 |
-| `fetch-image.py` | 下载外部图片到本地 |
-| `wechat_cover.py` | 封面路径统一解析 |
-
-## 测试
+## 测试与版本
 
 ```bash
-python -m unittest ReoNa-paper-digest/tests/test_publish_logic.py   # 15 项发布逻辑
-python ReoNa-paper-digest/tests/verify_render.py dist/article.html  # 20 项渲染检查
+python -m unittest discover -s skills/paper-weaver-zh/scripts/tests -v
+python tests/test_publish_logic.py
+python tests/test_editorial_lint.py
 ```
 
-## 目录结构
+本分支基于 ReoNa 上游提交 `1062cb0496abadcc018f0025fe9522632c168c96` 及已修改的本机 0.8.0 工具链，paper-weaver 来源为 0.1.0-local。本次分发版升为 0.1.1-fork：增加仓库内路径解析，并明确标题、图片完成后才记录最终审核指纹。未将开发机已安装版本自动升级。
 
-```
-ReoNa-paper-digest/
-├── SKILL.md                  # 写作规范（WeMD 方言 / 质检 / 微信坑清单）
-├── references/workflow.md    # 分阶段操作清单
-├── scripts/                  # 全部工具脚本（单一来源）
-│   ├── theme/wechat.css      # 微信主题样式
-│   └── vendor/               # MathJax / Mermaid（本地化，防 CDN 失效）
-├── tests/                    # 离线测试 + fixtures
-└── requirements.txt / LICENSE
-```
+此前已完成 29 项基础单元测试及单论文短篇流程试跑；本次打包的实际复验结果和未测范围见 [验证记录](docs/VALIDATION.md)。这不是多论文长文质量或微信后台保存的全面验收。
 
-## 许可证
+## 如何放入自己的 fork 分支
 
-MIT — 详见 [LICENSE](LICENSE)。vendored 的 MathJax（Apache-2.0）与 Mermaid（MIT）版权归其各自作者。
+见 [上传说明](docs/UPLOAD.md)。压缩包需要先解压，再将仓库根层级的文件上传到目标分支；不要只把 ZIP 本身提交为一个附件。建议分支名 `codex/paper-weaver-zh`，不会代替你创建分支或推送远端。
+
+## 来源与许可证
+
+ReoNa 保留原 [MIT LICENSE](LICENSE) 与作者署名；humanizer-zh 保留自己的 MIT 许可证。article-writing / note-organizing 保留原始 `SKILL.md` 中的作者与 MIT 声明。交互图的 Archify 运行时代码另附其许可证。
+
+详细来源、修改范围与许可证边界见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 和 [依赖指纹快照](skills/paper-weaver-zh/dependencies.lock.json)。上游使用说明另存为 [README.upstream.md](docs/README.upstream.md)，其中版本、测试与路径描述属于上游文档，不代替本分支说明。

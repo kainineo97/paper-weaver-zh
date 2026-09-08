@@ -512,8 +512,8 @@ async function pipeline() {
       startOnLoad: false,
       theme: 'neutral',
       securityLevel: 'loose',
-      fontFamily: '"Times New Roman", "Songti SC", SimSun, serif',
-      themeVariables: { fontFamily: '"Times New Roman", "Songti SC", SimSun, serif' }
+      fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif',
+      themeVariables: { fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif' }
     });
     await window.mermaid.run({ querySelector: '.mermaid' });
   } catch (e) { console.error('mermaid:', e); }

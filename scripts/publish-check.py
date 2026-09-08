@@ -7,6 +7,7 @@
   3. 封面图存在性
   4. 文中本地图片路径有效性
   5. [n] 引用与 refs.md 条目闭环
+  6. 编辑规范：禁用词、正文 H1、高亮/表格上限、歧义产率缺失措辞
 """
 
 import argparse
@@ -17,6 +18,7 @@ from pathlib import Path
 import yaml
 
 from wechat_cover import legacy_cover_candidates, resolve_cover
+from editorial_lint import lint_article
 
 VALID_STATUS = {"planned", "draft", "rendered", "published"}
 REQUIRED_META_FIELDS = ["title", "summary", "tags"]
@@ -142,6 +144,19 @@ def check_article(article_dir: Path) -> int:
             errors += 1
         else:
             print("[ok] No citations and no refs.md (acceptable)")
+
+    # 6. Editorial rules that can be checked deterministically
+    editorial_issues = lint_article(text)
+    editorial_errors = [message for severity, message in editorial_issues if severity == "error"]
+    editorial_warnings = [message for severity, message in editorial_issues if severity == "warn"]
+    for message in editorial_errors:
+        print(f"[error] Editorial: {message}")
+    for message in editorial_warnings:
+        print(f"[warn] Editorial: {message}")
+    if editorial_errors:
+        errors += len(editorial_errors)
+    else:
+        print("[ok] Editorial lint passed")
 
     return errors
 

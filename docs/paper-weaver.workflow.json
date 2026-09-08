@@ -1,0 +1,308 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "paper-weaver-zh · 设计与执行流程",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "user",
+      "label": "用户与交付"
+    },
+    {
+      "id": "tools",
+      "label": "脚本 · 确定性处理"
+    },
+    {
+      "id": "writing",
+      "label": "助手 · 理解与写作"
+    },
+    {
+      "id": "review",
+      "label": "助手 · 复核与定稿"
+    }
+  ],
+  "phases": [
+    {
+      "id": "inputs",
+      "label": "材料与证据",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "authoring",
+      "label": "叙事与润色",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "assurance",
+      "label": "检查与本地交付",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "security"
+    }
+  ],
+  "mainPath": [
+    "materials",
+    "ingest",
+    "evidence",
+    "draft",
+    "polish",
+    "science",
+    "seal",
+    "check",
+    "render",
+    "handoff"
+  ],
+  "semanticChecks": {
+    "allowedRoots": [
+      "materials"
+    ],
+    "allowedTerminals": [
+      "handoff"
+    ],
+    "requiredEdges": [
+      {
+        "from": "polish",
+        "to": "science"
+      },
+      {
+        "from": "seal",
+        "to": "check"
+      },
+      {
+        "from": "check",
+        "to": "render"
+      }
+    ],
+    "requiredPaths": [
+      {
+        "from": "materials",
+        "to": "handoff"
+      },
+      {
+        "from": "revise",
+        "to": "science"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "materials",
+      "lane": "user",
+      "col": 0,
+      "type": "external",
+      "label": "提交材料",
+      "sublabel": "论文 + 讨论 + 要求",
+      "tag": "来源不是指令",
+      "width": 156
+    },
+    {
+      "id": "ingest",
+      "lane": "tools",
+      "col": 0,
+      "type": "database",
+      "label": "归档与识别",
+      "sublabel": "pipeline.py init",
+      "tag": "ID · 轮次 · 哈希",
+      "width": 156
+    },
+    {
+      "id": "evidence",
+      "lane": "writing",
+      "col": 1,
+      "type": "backend",
+      "label": "问题与证据",
+      "sublabel": "讨论图 · 事实 · 账本",
+      "tag": "回到论文核查",
+      "width": 156
+    },
+    {
+      "id": "draft",
+      "lane": "writing",
+      "col": 2,
+      "type": "backend",
+      "label": "叙事与初稿",
+      "sublabel": "story-map → 01-draft",
+      "tag": "顺序服务理解",
+      "width": 156
+    },
+    {
+      "id": "polish",
+      "lane": "writing",
+      "col": 3,
+      "type": "backend",
+      "label": "全文中文润色",
+      "sublabel": "humanizer-zh",
+      "tag": "保留科学限定",
+      "width": 156
+    },
+    {
+      "id": "science",
+      "lane": "review",
+      "col": 3,
+      "type": "security",
+      "label": "科学复核",
+      "sublabel": "数字 · 因果 · 适用范围",
+      "tag": "助手判断",
+      "width": 156
+    },
+    {
+      "id": "revise",
+      "lane": "review",
+      "col": 2,
+      "type": "backend",
+      "label": "修订受影响处",
+      "sublabel": "补证或改写后重审",
+      "width": 156
+    },
+    {
+      "id": "seal",
+      "lane": "review",
+      "col": 4,
+      "type": "security",
+      "label": "定稿与审核记录",
+      "sublabel": "正文 · 标题 · 图片就绪",
+      "tag": "review.yaml + 指纹",
+      "width": 156
+    },
+    {
+      "id": "check",
+      "lane": "tools",
+      "col": 4,
+      "type": "security",
+      "label": "结构与版本检查",
+      "sublabel": "pipeline.py check",
+      "tag": "不判断科学真伪",
+      "width": 156
+    },
+    {
+      "id": "render",
+      "lane": "tools",
+      "col": 5,
+      "type": "messagebus",
+      "label": "渲染与双页同步",
+      "sublabel": "pipeline.py build",
+      "tag": "暂存后写入 dist",
+      "width": 156
+    },
+    {
+      "id": "handoff",
+      "lane": "user",
+      "col": 5,
+      "type": "frontend",
+      "label": "本地审阅稿",
+      "sublabel": "阅读页 + 富文本复制页",
+      "tag": "不自动上传微信",
+      "width": 156
+    }
+  ],
+  "edges": [
+    {
+      "id": "submit",
+      "from": "materials",
+      "to": "ingest",
+      "role": "main"
+    },
+    {
+      "id": "source-reading",
+      "from": "ingest",
+      "to": "evidence",
+      "role": "main"
+    },
+    {
+      "id": "evidence-writing",
+      "from": "evidence",
+      "to": "draft",
+      "role": "main"
+    },
+    {
+      "id": "draft-polish",
+      "from": "draft",
+      "to": "polish",
+      "role": "main"
+    },
+    {
+      "id": "post-polish-review",
+      "from": "polish",
+      "to": "science",
+      "role": "main",
+      "variant": "security"
+    },
+    {
+      "id": "review-approved",
+      "from": "science",
+      "to": "seal",
+      "label": "通过",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "id": "review-rework",
+      "from": "science",
+      "to": "revise",
+      "label": "需修正",
+      "role": "error",
+      "variant": "security"
+    },
+    {
+      "id": "rework-polish",
+      "from": "revise",
+      "to": "polish",
+      "label": "重新润色",
+      "role": "return",
+      "variant": "dashed"
+    },
+    {
+      "id": "seal-check",
+      "from": "seal",
+      "to": "check",
+      "via": [[1160, 498], [1160, 300], [826.8, 300]],
+      "role": "main"
+    },
+    {
+      "id": "gate-render",
+      "from": "check",
+      "to": "render",
+      "label": "通过",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "id": "render-handoff",
+      "from": "render",
+      "to": "handoff",
+      "role": "main"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "三张地图，三种职责",
+      "items": [
+        "discussion-map 决定问题覆盖；story-map 决定叙事顺序。",
+        "claim-ledger 约束关键事实、推论和结论强度。"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "两道门，不是同一种审核",
+      "items": [
+        "助手回到来源做科学复核；脚本检查结构与审核版本。",
+        "标题、正文或图片变化后，旧审核失效，需复核后再构建。"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "组合能力，不自动代写",
+      "items": [
+        "同一助手按阶段使用五个独立 skill；脚本不理解论文。",
+        "默认止于本地审阅稿；上传草稿另需授权，公开发布由用户操作。"
+      ]
+    }
+  ]
+}
