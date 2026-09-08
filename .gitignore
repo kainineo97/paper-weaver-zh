@@ -1,6 +1,16 @@
-﻿__pycache__/
+__pycache__/
 *.pyc
 .env
+.env.*
+!.env.example
+.venv/
+.pytest_cache/
+.paper-weaver-*/
+inbox/
+articles/
+dist/
+storage_state*.json
+*cookies*.json
 tests/output/render/
 tests/output/exporter/
 tests/output/official/
