@@ -1,4 +1,0 @@
-interface:
-  display_name: "ReoNa 论文精读中文编辑"
-  short_description: "将论文证据核对、中文母语化编辑与微信成稿合并为一套工作流"
-  default_prompt: "Use $reona-paper-digest-zh to turn this paper and discussion into a polished Chinese WeChat article."
