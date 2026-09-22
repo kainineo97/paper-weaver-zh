@@ -1,6 +1,6 @@
 {
   "name": "paper-weaver-zh",
-  "version": "0.3.0-local",
+  "version": "0.3.1-local",
   "package_type": "codex-skill",
   "entrypoint": "SKILL.md",
   "archive_root": "paper-weaver-zh/",
